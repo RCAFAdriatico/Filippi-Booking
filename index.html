@@ -692,10 +692,8 @@ async function loadClubBookings(clubName){
         // Also mark as confirmed so slot shows as occupied
         if(!confirmed[dk]) confirmed[dk]={};
         if(!confirmed[dk][slotMin]) confirmed[dk][slotMin]=[];
-        const alreadyConf = confirmed[dk][slotMin].some(function(x){ return x.boat===boat && x.club===clubName; });
-        if(!alreadyConf){
-          confirmed[dk][slotMin].push({boat:boat, club:get(1), referent:get(2), email:get(3), phone:get(4)});
-        }
+        // Allow multiple bookings of same boat+club in same slot
+        confirmed[dk][slotMin].push({boat:boat, club:get(1), referent:get(2), email:get(3), phone:get(4), paid:get(13)==="PAGATO", timestamp:get(0)});
       }
     });
 
