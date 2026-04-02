@@ -283,6 +283,12 @@ tr:hover td{background:rgba(255,255,255,.02)}
       <button id="flag-it" onclick="setLang('it')" title="Italiano"
         style="background:none;border:none;cursor:pointer;font-size:20px;padding:2px;opacity:0.4;transition:opacity .18s">🇮🇹</button>
     </div>
+    <a id="guide-link" href="https://rcafadriatico.github.io/Filippi-Booking/guida_utente.pdf" target="_blank"
+      style="font-size:11px;color:var(--muted);text-decoration:none;padding:4px 8px;border:1px solid var(--border);border-radius:6px;transition:all .18s"
+      onmouseover="this.style.color='var(--gold)';this.style.borderColor='var(--gold)'"
+      onmouseout="this.style.color='var(--muted)';this.style.borderColor='var(--border)'">
+      📄 User Guide
+    </a>
     <div class="tab-switch">
       <button class="tsw on" id="tab-booking" onclick="switchTab('booking')">📅 Booking</button>
       <button class="tsw" id="tab-admin" onclick="switchTab('admin')">🛠 Admin</button>
@@ -1617,6 +1623,14 @@ function applyLang(){
   // Flag buttons
   document.getElementById('flag-en').style.opacity = lang==='en'?'1':'0.4';
   document.getElementById('flag-it').style.opacity = lang==='it'?'1':'0.4';
+  // Update guide download link based on language
+  const gl = document.getElementById('guide-link');
+  if(gl){
+    gl.href = lang==='it'
+      ? 'https://rcafadriatico.github.io/Filippi-Booking/guida_utente.pdf'
+      : 'https://rcafadriatico.github.io/Filippi-Booking/user_guide.pdf';
+    gl.textContent = '📄 ' + (lang==='it' ? 'Guida Utente' : 'User Guide');
+  }
   // SESSIONS labels
   SESSIONS[0].dayLabel   = t('thursday');
   SESSIONS[0].dateLabel  = t('dateThursday');
@@ -1929,7 +1943,7 @@ function doChangePw(){
 }
 
 // ─── BOOKING OPEN DATE ───────────────────────────────────────────────────────
-const BOOKING_OPEN = new Date('2026-04-02T19:00:00Z'); // 2 Apr 2026 21:00 CET
+const BOOKING_OPEN = new Date('2026-04-02T21:00:00Z'); // 2 Apr 2026 23:00 CET
 
 function checkBookingOpen(){
   const now = new Date();
@@ -1961,7 +1975,7 @@ function showCountdown(){
         <div style="background:#0f1e2d;border:1px solid #1e3348;border-radius:16px;padding:32px 48px;text-align:center">
           <div style="font-size:13px;color:#5a7f9a;text-transform:uppercase;letter-spacing:2px;margin-bottom:16px">Le prenotazioni aprono tra / Bookings open in</div>
           <div id="countdown-timer" style="font-size:52px;font-weight:700;color:#c9a052;font-family:monospace;letter-spacing:4px">--:--:--</div>
-          <div style="font-size:12px;color:#5a7f9a;margin-top:12px">Mercoledì 2 Aprile 2026 · ore 21:00 (CET)</div>
+          <div style="font-size:12px;color:#5a7f9a;margin-top:12px">Mercoledì 2 Aprile 2026 · ore 23:00 (CET)</div>
         </div>
         <div style="font-size:11px;color:#3a5f7a">La pagina si aggiorna automaticamente all'apertura</div>
       </div>`);
