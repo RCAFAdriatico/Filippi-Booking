@@ -1706,14 +1706,12 @@ async function loadBookingsFromSheet(){
 
       if(!confirmed[dk]) confirmed[dk] = {};
       if(!confirmed[dk][slotMin]) confirmed[dk][slotMin] = [];
-      const exists = confirmed[dk][slotMin].some(x => x.boat===boat && x.club===club);
-      if(!exists){
-        confirmed[dk][slotMin].push({
-          boat, club, referent:get(2), email:get(3), phone:get(4),
-          paid: get(13)==="PAGATO",
-          timestamp: get(0),
-        });
-      }
+      // Allow multiple bookings of same boat+club in same slot
+      confirmed[dk][slotMin].push({
+        boat, club, referent:get(2), email:get(3), phone:get(4),
+        paid: get(13)==="PAGATO",
+        timestamp: get(0),
+      });
     });
 
     renderSlots();
