@@ -1278,10 +1278,9 @@ async function cancelSent(i){
 
 // ─── ADMIN ───────────────────────────────────────────────────────────────────
 async function togglePaid(dk, slotMin, boat, club2, paid){
-  // Update locally
+  // Update ALL matching records locally (club may have multiple boats in same slot)
   const bks = (confirmed[dk]&&confirmed[dk][slotMin])||[];
-  const bk = bks.find(x => x.boat===boat && x.club===club2);
-  if(bk) bk.paid = paid;
+  bks.filter(x => x.boat===boat && x.club===club2).forEach(x => x.paid = paid);
 
   // Update in Google Sheet
   try {
