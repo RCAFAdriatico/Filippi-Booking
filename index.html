@@ -690,8 +690,11 @@ async function loadClubBookings(clubName){
       const sess = day && day.sessions.find(function(s){ return s.slots.some(function(sl){ return sl.minutes===slotMin; }); });
       if(!slot) return;
 
-      const alreadySent = sent.some(function(b){ return b.dk===dk && b.slotMin===slotMin && b.boat===boat && b.club===clubName; });
-      if(!alreadySent){
+      // Count how many times this club+boat+slot already appears in confirmed (from sheet load)
+      // and how many times in sent - only add if sent has fewer
+      const inConfirmed = (confirmed[dk]&&confirmed[dk][slotMin]||[]).filter(function(x){ return x.boat===boat && x.club===clubName; }).length;
+      const inSent = sent.filter(function(b){ return b.dk===dk && b.slotMin===slotMin && b.boat===boat && b.club===clubName; }).length;
+      if(inSent < inConfirmed || inSent === 0){
         sent.push({
           dk:dk, slotMin:slotMin, boat:boat, slot:slot, slots:slot,
           sessId:sess ? sess.id : "", sessLabel:sess ? sess.label : "",
@@ -702,8 +705,11 @@ async function loadClubBookings(clubName){
         // Also mark as confirmed so slot shows as occupied
         if(!confirmed[dk]) confirmed[dk]={};
         if(!confirmed[dk][slotMin]) confirmed[dk][slotMin]=[];
-        // Allow multiple bookings of same boat+club in same slot
-        confirmed[dk][slotMin].push({boat:boat, club:get(1), referent:get(2), email:get(3), phone:get(4), paid:get(13)==="PAGATO", timestamp:get(0)});
+        // Only add to confirmed if not already there from initial sheet load
+        const alreadyInConf = confirmed[dk][slotMin].some(function(x){ return x.boat===boat && x.club===clubName && x.timestamp===get(0); });
+        if(!alreadyInConf){
+          confirmed[dk][slotMin].push({boat:boat, club:get(1), referent:get(2), email:get(3), phone:get(4), paid:get(13)==="PAGATO", timestamp:get(0)});
+        }
       }
     });
 
@@ -781,9 +787,9 @@ function renderSlots(){
         <span class="sess-title">${sess.label}</span>
         <span class="sess-range">${first.start}–${last.end}</span>
         <div class="sess-div"></div>
-        <span class="fleet-pill" style="color:var(--c1x);border-color:rgba(74,158,202,.3);background:rgba(74,158,202,.07)">1x · max 6</span>
-        <span class="fleet-pill" style="color:var(--c2x);border-color:rgba(109,191,139,.3);background:rgba(109,191,139,.07)">2x · max 6</span>
-        <span class="fleet-pill" style="color:var(--c4x);border-color:rgba(232,169,74,.3);background:rgba(232,169,74,.07)">4x+ · ${n4x} slots ⚑</span>
+        <span class="fleet-pill" style="color:var(--c1x);border-color:rgba(74,158,202,.3);background:rgba(74,158,202,.07)" id="pill-1x">1x · max 6</span>
+        <span class="fleet-pill" style="color:var(--c2x);border-color:rgba(109,191,139,.3);background:rgba(109,191,139,.07)" id="pill-2x">2x · max 5</span>
+        <span class="fleet-pill" style="color:var(--c4x);border-color:rgba(232,169,74,.3);background:rgba(232,169,74,.07)">4x+ · max 1 ⚑</span>
       </div>
       <div class="sgrid">`;
 
@@ -1137,15 +1143,16 @@ function generateWaiver(clubData, slots){
   // PAYMENT
   section(lang==="it" ? "PAGAMENTO" : "PAYMENT DETAILS");
   checkPage(30);
-  doc.setFillColor(255,253,245); doc.rect(ml,y-2,usable,28,"F");
-  doc.setDrawColor(201,160,82); doc.rect(ml,y-2,usable,28);
+  doc.setFillColor(255,253,245); doc.rect(ml,y-2,usable,34,"F");
+  doc.setDrawColor(201,160,82); doc.rect(ml,y-2,usable,34);
   doc.setFont("helvetica","bold"); doc.setFontSize(9); doc.setTextColor(150,100,0);
   doc.text(lang==="it" ? "ATTENZIONE: Bonifico entro 24 ore dalla prenotazione" : "WARNING: Bank transfer required within 24 hours of booking", ml+3, y+4);
   doc.setTextColor(0,0,0); doc.setFont("helvetica","normal"); doc.setFontSize(8.5);
-  doc.text("IBAN:  IT41F0849124300000220000594", ml+3, y+11);
-  doc.text("BIC:   CCRTIT2TCIV", ml+3, y+17);
+  doc.text((lang==="it" ? "Beneficiario: Club Nautico Fanese ASD" : "Beneficiary: Club Nautico Fanese ASD"), ml+3, y+11);
+  doc.text("IBAN:  IT41F0849124300000220000594", ml+3, y+17);
+  doc.text("BIC:   CCRTIT2TCIV", ml+3, y+23);
   doc.setFont("helvetica","bold");
-  doc.text((lang==="it" ? "Causale:    NOLEGGIO ALLENAMENTO " : "Reference:  TRAINING RENTAL ") + (clubData.name||""), ml+3, y+23);
+  doc.text((lang==="it" ? "Causale:    NOLEGGIO ALLENAMENTO " : "Reference:  TRAINING RENTAL ") + (clubData.name||""), ml+3, y+29);
   y+=32;
 
   // TERMS
