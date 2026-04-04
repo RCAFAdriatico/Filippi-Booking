@@ -468,7 +468,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
 const ADMIN_EMAIL     = "beachsprintfano@gmail.com";
 const PRICE = 15.00; // default
 const PROMO_END = new Date('2026-04-06T22:00:00Z'); // 6 Apr 2026 23:59 CET
-const PRICES_PROMO = { "1x": 15.00, "2x": 15.00, "4x+": 30.00 };
+const PRICES_PROMO = { "1x": 15.00, "2x": 15.00, "4x+": 60.00 };
 const PRICES_FULL  = { "1x": 15.00, "2x": 30.00, "4x+": 60.00 };
 function getPrice(bt){ return (new Date() < PROMO_END ? PRICES_PROMO : PRICES_FULL)[bt] || PRICE; }
 function isPromo(){ return new Date() < PROMO_END; }
@@ -2151,8 +2151,8 @@ showCountdown();
       const h = Math.floor(diff/3600000);
       const m = Math.floor((diff%3600000)/60000);
       const label = lang==='it'
-        ? 'Promo lancio: 1x e 2x a €15,00 a barca · Scade in ' + h + 'h ' + m + 'm · Dal 7 Aprile prezzi standard'
-        : 'Launch promo: 1x and 2x at €15.00 per boat · Expires in ' + h + 'h ' + m + 'm · Standard prices from April 7';
+        ? '🎉 Promo lancio: 1x a €15,00 · 2x a €15,00 a barca · Scade in ' + h + 'h ' + m + 'm · Dal 7 Aprile: 2x a €30,00'
+        : '🎉 Launch promo: 1x at €15.00 · 2x at €15.00 per boat · Expires in ' + h + 'h ' + m + 'm · From April 7: 2x at €30.00';
       txt.textContent = label;
       setTimeout(updatePromoText, 60000);
     };
