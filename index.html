@@ -296,6 +296,10 @@ tr:hover td{background:rgba(255,255,255,.02)}
   </div>
 </header>
 
+<div id="promo-banner" style="background:linear-gradient(135deg,rgba(201,160,82,.18),rgba(201,160,82,.06));border-bottom:2px solid rgba(201,160,82,.4);padding:10px 20px;text-align:center;font-size:13px;color:var(--gold);font-family:Outfit,sans-serif">
+  🎉 <strong>Promo lancio / Launch promo:</strong> &nbsp;€15,00 <span id="promo-per">a barca</span> per slot &nbsp;·&nbsp; Valida fino a / Valid until <strong>Martedì 7 Aprile / Tuesday 7 April 2026</strong> &nbsp;·&nbsp; <span style="color:var(--muted);font-size:11px" id="promo-note">Dopo / After: €15,00 a posto / per seat</span>
+</div>
+
 <!-- BOOKING -->
 <div id="view-booking">
   <div class="layout">
@@ -1352,7 +1356,10 @@ function renderAdmin(){
               onchange="togglePaid('${b.dk}',${b.slotMin},'${b.boat}','${b.club}',this.checked)"
               style="width:16px;height:16px;cursor:pointer;accent-color:var(--green)"/>
           </td>
-          <td><button class="del-btn" onclick="adminDel('${b.dk}',${b.slotMin},'${b.boat}','${b.club}')">🗑</button></td>
+          <td style="display:flex;gap:4px">
+            <button class="del-btn" onclick="showMoveSlot('${b.dk}',${b.slotMin},'${b.boat}','${b.club}','${b.referent}','${b.email}')" title="Move slot" style="color:var(--c1x);border-color:rgba(74,158,202,.3)">↔</button>
+            <button class="del-btn" onclick="adminDel('${b.dk}',${b.slotMin},'${b.boat}','${b.club}')">🗑</button>
+          </td>
         </tr>`;
       });
       html += `</tbody></table></div>`;
@@ -1390,7 +1397,50 @@ function renderAdmin(){
       </div>
     </div>`;
 
-  document.getElementById("admin-tables").innerHTML = summaryHtml + html;
+  // Statistics
+  const days = SESSIONS;
+  let statsHtml = '<div style="margin-bottom:20px">';
+  statsHtml += '<div style="font-size:12px;font-weight:600;color:var(--gold);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">📊 Statistiche / Statistics</div>';
+  statsHtml += '<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">';
+  
+  ["1x","2x","4x+"].forEach(bt => {
+    const boatAll = all.filter(b => b.boat===bt);
+    const totalSlots = SESSIONS.reduce((acc,day) => acc + day.sessions.reduce((a,s) => a + s.slots.length,0),0);
+    const capacity = totalSlots * FLEET[bt];
+    const booked = boatAll.length;
+    const pct = capacity>0 ? Math.round(booked/capacity*100) : 0;
+    const col = bt==="1x"?"var(--c1x)":bt==="2x"?"var(--c2x)":"var(--c4x)";
+    statsHtml += `<div style="flex:1;min-width:160px;background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:12px">
+      <div style="font-size:11px;color:var(--muted);margin-bottom:6px">${bt} — ${bt==="1x"?t("single"):bt==="2x"?t("double"):t("coxedFour")}</div>
+      <div style="font-size:20px;font-weight:700;color:${col}">${booked}<span style="font-size:12px;color:var(--muted)">/${capacity}</span></div>
+      <div style="margin-top:6px;height:5px;background:rgba(255,255,255,.08);border-radius:3px">
+        <div style="width:${pct}%;height:100%;background:${col};border-radius:3px;transition:width .3s"></div>
+      </div>
+      <div style="font-size:10px;color:var(--muted);margin-top:4px">${pct}% occupato / occupied</div>
+    </div>`;
+  });
+  statsHtml += '</div>';
+  
+  // Per day stats
+  statsHtml += '<div style="display:flex;gap:10px;flex-wrap:wrap">';
+  SESSIONS.forEach(day => {
+    const dayBks = all.filter(b => b.dk===day.dateKey);
+    const daySlots = day.sessions.reduce((a,s) => a+s.slots.length,0);
+    const dayCap = daySlots * (FLEET["1x"]+FLEET["2x"]+FLEET["4x+"]);
+    const pct = dayCap>0 ? Math.round(dayBks.length/dayCap*100) : 0;
+    statsHtml += `<div style="flex:1;min-width:160px;background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:12px">
+      <div style="font-size:11px;color:var(--muted);margin-bottom:4px">${day.dayLabel} ${day.dateLabel}</div>
+      <div style="font-size:18px;font-weight:700;color:var(--white)">${dayBks.length} <span style="font-size:11px;color:var(--muted)">prenotazioni</span></div>
+      <div style="font-size:10px;color:var(--muted);margin-top:2px">
+        1x: ${dayBks.filter(b=>b.boat==="1x").length} &nbsp;·&nbsp; 
+        2x: ${dayBks.filter(b=>b.boat==="2x").length} &nbsp;·&nbsp; 
+        4x+: ${dayBks.filter(b=>b.boat==="4x+").length}
+      </div>
+    </div>`;
+  });
+  statsHtml += '</div></div>';
+
+  document.getElementById("admin-tables").innerHTML = summaryHtml + statsHtml + html;
 }
 
 function adminDel(dk, min, boat, clubName){
@@ -1637,6 +1687,11 @@ function applyLang(){
   // Flag buttons
   document.getElementById('flag-en').style.opacity = lang==='en'?'1':'0.4';
   document.getElementById('flag-it').style.opacity = lang==='it'?'1':'0.4';
+  // Update promo banner text
+  const pp = document.getElementById('promo-per');
+  if(pp) pp.textContent = lang==='it' ? 'a barca' : 'per boat';
+  const pn = document.getElementById('promo-note');
+  if(pn) pn.textContent = lang==='it' ? 'Dopo: €15,00 a posto (timoniere escluso)' : 'After: €15.00 per seat (coxswain excluded)';
   // Update guide download link based on language
   const gl = document.getElementById('guide-link');
   if(gl){
@@ -1794,6 +1849,88 @@ function exportExcel(){
 }
 
 // ─── CHANGE PASSWORD ─────────────────────────────────────────────────────────
+function showMoveSlot(dk, slotMin, boat, clubName, referent, email){
+  // Build available slots for this boat type
+  let opts = '';
+  SESSIONS.forEach(function(day){
+    day.sessions.forEach(function(sess){
+      sess.slots.forEach(function(slot){
+        const used = countBt(day.dateKey, slot.minutes, boat);
+        const available = FLEET[boat] - used;
+        if(available > 0 && !(day.dateKey===dk && slot.minutes===slotMin)){
+          opts += `<option value="${day.dateKey}|${slot.minutes}|${day.dateLabel}|${sess.label}|${slot.start}|${slot.end}">
+            ${day.dayLabel} ${day.dateLabel} · ${sess.label} · ${slot.start}–${slot.end} (${available} free)
+          </option>`;
+        }
+      });
+    });
+  });
+
+  if(!opts){ toast("⚠️ No available slots to move to"); return; }
+
+  const html = `<div id="move-modal" style="position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:999;display:flex;align-items:center;justify-content:center">
+    <div style="background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:28px;width:420px;max-width:95vw">
+      <div style="font-size:17px;font-weight:700;color:var(--white);margin-bottom:4px">↔ Move slot</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:16px">${clubName} · ${boat}</div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:6px">Move to:</div>
+      <select id="move-target" style="width:100%;padding:9px;border-radius:7px;background:rgba(255,255,255,.05);border:1px solid var(--border);color:var(--text);font-family:Outfit,sans-serif;font-size:12px;margin-bottom:16px">
+        ${opts}
+      </select>
+      <div style="display:flex;gap:10px">
+        <button onclick="document.getElementById('move-modal').remove()"
+          style="flex:1;padding:9px;border-radius:7px;background:transparent;border:1px solid var(--border);color:var(--muted);cursor:pointer;font-family:Outfit,sans-serif">Cancel</button>
+        <button onclick="doMoveSlot('${dk}',${slotMin},'${boat}','${clubName}','${referent}','${email}')"
+          style="flex:1;padding:9px;border-radius:7px;background:var(--gold);border:none;color:#07111a;font-weight:700;cursor:pointer;font-family:Outfit,sans-serif">Move →</button>
+      </div>
+    </div>
+  </div>`;
+  document.body.insertAdjacentHTML('beforeend', html);
+}
+
+async function doMoveSlot(oldDk, oldSlotMin, boat, clubName, referent, email){
+  const sel = document.getElementById('move-target');
+  if(!sel) return;
+  const parts = sel.value.split('|');
+  const newDk = parts[0], newSlotMin = Number(parts[1]);
+  const newDateLabel = parts[2], newSessLabel = parts[3];
+  const newStart = parts[4], newEnd = parts[5];
+
+  // Find old slot info
+  const oldDay = SESSIONS.find(d => d.dateKey===oldDk);
+  const oldSlot = oldDay?.sessions.flatMap(s=>s.slots).find(s=>s.minutes===oldSlotMin);
+  const oldSess = oldDay?.sessions.find(s=>s.slots.some(sl=>sl.minutes===oldSlotMin));
+
+  // Remove from old slot in confirmed
+  const oldArr = (confirmed[oldDk]&&confirmed[oldDk][oldSlotMin])||[];
+  const idx = oldArr.findIndex(x=>x.boat===boat&&x.club===clubName);
+  if(idx>-1) oldArr.splice(idx,1);
+
+  // Add to new slot in confirmed
+  if(!confirmed[newDk]) confirmed[newDk]={};
+  if(!confirmed[newDk][newSlotMin]) confirmed[newDk][newSlotMin]=[];
+  confirmed[newDk][newSlotMin].push({boat, club:clubName, referent, email, phone:"", paid:false});
+
+  // Cancel old in sheet and book new
+  try {
+    const fd1 = new FormData();
+    fd1.append("data", JSON.stringify({action:"cancel", club:clubName, referent, email,
+      boat, dk:oldDk, slotMin:oldSlotMin,
+      dayLabel:oldDay?.dateLabel||"", sessLabel:oldSess?.label||"",
+      start:oldSlot?.start||"", end:oldSlot?.end||""}));
+    await fetch(APPS_SCRIPT_URL, {method:"POST", mode:"no-cors", body:fd1});
+
+    const fd2 = new FormData();
+    fd2.append("data", JSON.stringify({action:"book", club:clubName, referent, email, phone:"",
+      slots:[{boat, dayLabel:newDateLabel, sessLabel:newSessLabel,
+              start:newStart, end:newEnd, dk:newDk, slotMin:newSlotMin}]}));
+    await fetch(APPS_SCRIPT_URL, {method:"POST", mode:"no-cors", body:fd2});
+  } catch(e){ console.error(e); }
+
+  document.getElementById('move-modal').remove();
+  renderAdmin(); renderSlots();
+  toast(`✅ Slot moved to ${newDateLabel} · ${newSessLabel} · ${newStart}–${newEnd}`, 4000);
+}
+
 function showSettings(){
   const f = FLEET;
   const cfg = sessionConfig;
@@ -2000,6 +2137,11 @@ function showCountdown(){
 }
 
 showCountdown();
+// Hide promo banner after April 7 midnight CET (22:00 UTC)
+if(new Date() > new Date('2026-04-07T22:00:00Z')){
+  const pb = document.getElementById('promo-banner');
+  if(pb) pb.style.display = 'none';
+}
 
 // INIT
 applyLang();
