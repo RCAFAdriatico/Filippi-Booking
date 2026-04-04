@@ -296,6 +296,9 @@ tr:hover td{background:rgba(255,255,255,.02)}
   </div>
 </header>
 
+<div id="promo-banner" style="display:none;background:linear-gradient(135deg,rgba(201,160,82,.18),rgba(201,160,82,.06));border-bottom:2px solid rgba(201,160,82,.4);padding:10px 20px;text-align:center;font-size:13px;color:var(--gold);font-family:Outfit,sans-serif">
+  🎉 <span id="promo-text"></span>
+</div>
 
 <!-- BOOKING -->
 <div id="view-booking">
@@ -464,7 +467,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
 // ─── CONFIG ──────────────────────────────────────────────────────────────────
 const ADMIN_EMAIL     = "beachsprintfano@gmail.com";
 const PRICE = 15.00; // default
-const PROMO_END = new Date('2026-04-07T22:00:00Z'); // 7 Apr 2026 midnight CET
+const PROMO_END = new Date('2026-04-05T22:00:00Z'); // 6 Apr 2026 midnight CET
 const PRICES_PROMO = { "1x": 15.00, "2x": 15.00, "4x+": 30.00 };
 const PRICES_FULL  = { "1x": 15.00, "2x": 30.00, "4x+": 60.00 };
 function getPrice(bt){ return (new Date() < PROMO_END ? PRICES_PROMO : PRICES_FULL)[bt] || PRICE; }
@@ -2148,8 +2151,8 @@ showCountdown();
       const h = Math.floor(diff/3600000);
       const m = Math.floor((diff%3600000)/60000);
       const label = lang==='it'
-        ? 'Promo lancio: 1x e 2x a €15,00 a barca · Scade in ' + h + 'h ' + m + 'm · Dal 7 Aprile prezzi standard'
-        : 'Launch promo: 1x and 2x at €15.00 per boat · Expires in ' + h + 'h ' + m + 'm · Standard prices from April 7';
+        ? 'Promo lancio: 1x e 2x a €15,00 a barca · Scade in ' + h + 'h ' + m + 'm · Dal 6 Aprile prezzi standard'
+        : 'Launch promo: 1x and 2x at €15.00 per boat · Expires in ' + h + 'h ' + m + 'm · Standard prices from April 6';
       txt.textContent = label;
       setTimeout(updatePromoText, 60000);
     };
