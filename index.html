@@ -296,9 +296,6 @@ tr:hover td{background:rgba(255,255,255,.02)}
   </div>
 </header>
 
-<div id="promo-banner" style="background:linear-gradient(135deg,rgba(201,160,82,.18),rgba(201,160,82,.06));border-bottom:2px solid rgba(201,160,82,.4);padding:10px 20px;text-align:center;font-size:13px;color:var(--gold);font-family:Outfit,sans-serif">
-  🎉 <strong>Promo lancio / Launch promo:</strong> &nbsp;€15,00 <span id="promo-per">a barca</span> per slot &nbsp;·&nbsp; Valida fino a / Valid until <strong>Martedì 7 Aprile / Tuesday 7 April 2026</strong> &nbsp;·&nbsp; <span style="color:var(--muted);font-size:11px" id="promo-note">Dopo / After: €15,00 a posto / per seat</span>
-</div>
 
 <!-- BOOKING -->
 <div id="view-booking">
@@ -1687,11 +1684,7 @@ function applyLang(){
   // Flag buttons
   document.getElementById('flag-en').style.opacity = lang==='en'?'1':'0.4';
   document.getElementById('flag-it').style.opacity = lang==='it'?'1':'0.4';
-  // Update promo banner text
-  const pp = document.getElementById('promo-per');
-  if(pp) pp.textContent = lang==='it' ? 'a barca' : 'per boat';
-  const pn = document.getElementById('promo-note');
-  if(pn) pn.textContent = lang==='it' ? 'Dopo: €15,00 a posto (timoniere escluso)' : 'After: €15.00 per seat (coxswain excluded)';
+
   // Update guide download link based on language
   const gl = document.getElementById('guide-link');
   if(gl){
@@ -2137,11 +2130,7 @@ function showCountdown(){
 }
 
 showCountdown();
-// Hide promo banner after April 7 midnight CET (22:00 UTC)
-if(new Date() > new Date('2026-04-07T22:00:00Z')){
-  const pb = document.getElementById('promo-banner');
-  if(pb) pb.style.display = 'none';
-}
+
 
 // INIT
 applyLang();
