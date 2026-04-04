@@ -463,7 +463,12 @@ tr:hover td{background:rgba(255,255,255,.02)}
 <script>
 // ─── CONFIG ──────────────────────────────────────────────────────────────────
 const ADMIN_EMAIL     = "beachsprintfano@gmail.com";
-const PRICE           = 15.00;
+const PRICE = 15.00; // default
+const PROMO_END = new Date('2026-04-07T22:00:00Z'); // 7 Apr 2026 midnight CET
+const PRICES_PROMO = { "1x": 15.00, "2x": 15.00, "4x+": 30.00 };
+const PRICES_FULL  = { "1x": 15.00, "2x": 30.00, "4x+": 60.00 };
+function getPrice(bt){ return (new Date() < PROMO_END ? PRICES_PROMO : PRICES_FULL)[bt] || PRICE; }
+function isPromo(){ return new Date() < PROMO_END; }
 const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxYGJz5uXj4s6gxJtJwVDOZqegbRpAyacszbt6b0VosM1iVGHnAB1kREwBmj6hrS21z/exec";
 
 // Flotta fisica disponibile
@@ -919,7 +924,7 @@ function renderCart(){
       <button class="cart-del" onclick="cart.splice(${gi},1);reRender()">×</button>
     </div>`;
   }).join("");
-  const tot = (myCart.length * PRICE).toFixed(2);
+  const tot = myCart.reduce((s,c) => s + getPrice(c.boat), 0).toFixed(2);
   document.getElementById("cart-total").innerHTML = `<span>${myCart.length} slots</span><span>€ ${tot}</span>`;
   footerEl.style.display = "block";
   // waiver button always visible
@@ -988,7 +993,7 @@ async function doSend(){
   const btn = document.getElementById("btn-confirm");
   btn.disabled = true; btn.innerHTML = `<span class="spinner"></span>Sending...`;
 
-  const tot = (myCart.length * PRICE).toFixed(2);
+  const tot = myCart.reduce((s,c) => s + getPrice(c.boat), 0).toFixed(2);
   const slotLines = myCart.map(c =>
     `• ${c.boat} – ${c.dayLabel} (${c.sessLabel}) – ${c.slots?.start||""} – ${c.slots?.end||""}`
   ).join("\n");
@@ -1132,8 +1137,8 @@ function generateWaiver(clubData, slots){
     doc.text(s.dayLabel||"", ml+50, y);
     doc.text(s.sessLabel||"", ml+95, y);
     doc.text((s.start||"")+"--"+(s.end||""), ml+130, y);
-    doc.text("15.00", ml+160, y);
-    total+=15; y+=7;
+    doc.text(getPrice(s.boat||"1x").toFixed(2), ml+160, y);
+    total+=getPrice(s.boat||"1x"); y+=7;
   }
   doc.setFillColor(240,235,210); doc.rect(ml,y-4,usable,7,"F");
   doc.setFont("helvetica","bold"); doc.setFontSize(9);
@@ -1347,7 +1352,7 @@ function renderAdmin(){
           <td>${b.referent}</td>
           <td style="color:var(--muted)">${b.email}</td>
           <td style="color:var(--muted)">${b.phone||"–"}</td>
-          <td style="color:var(--gold);font-weight:600">€${PRICE.toFixed(2)}</td>
+          <td style="color:var(--gold);font-weight:600">€${getPrice(b.boat).toFixed(2)}</td>
           <td style="text-align:center">
             <input type="checkbox" ${b.paid?"checked":""}
               onchange="togglePaid('${b.dk}',${b.slotMin},'${b.boat}','${b.club}',this.checked)"
@@ -1367,8 +1372,8 @@ function renderAdmin(){
   const totalSlots = allBks.length;
   const paidSlots  = allBks.filter(b => b.paid).length;
   const unpaidSlots = totalSlots - paidSlots;
-  const totalRevenue = totalSlots * PRICE;
-  const paidRevenue  = paidSlots  * PRICE;
+  const totalRevenue = allBks.reduce((s,b) => s + getPrice(b.boat), 0);
+  const paidRevenue  = allBks.filter(b=>b.paid).reduce((s,b) => s + getPrice(b.boat), 0);
 
   const summaryHtml = `
     <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px">
@@ -1796,7 +1801,7 @@ function exportCSV(){
   if(!all.length){ toast("⚠️ No bookings"); return; }
   const rows = [["Data","Session","Time","Boat class","Club","Contact person","Email","Phone","Importo"]];
   all.forEach(b => rows.push([b.dayLabel, b.sessLabel, `${b.slotStart}-${b.slotEnd}`,
-    b.boat, b.club, b.referent, b.email, b.phone||"–", `€${PRICE.toFixed(2)}`]));
+    b.boat, b.club, b.referent, b.email, b.phone||"–", `€${getPrice(b.boat).toFixed(2)}`]));
   const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(",")).join("\n");
   const a = document.createElement("a");
   a.href = "data:text/csv;charset=utf-8," + encodeURIComponent("\uFEFF" + csv);
@@ -1831,7 +1836,7 @@ function exportExcel(){
   });
   var list = [["Date","Session","Time","Boat","Club","Contact","Email","Phone","Fee","Paid"]];
   all.forEach(function(b){
-    list.push([b.dayLabel,b.sessLabel,(b.slotStart||"")+"-"+(b.slotEnd||""),b.boat,b.club,b.referent,b.email,b.phone||"-","EUR "+PRICE.toFixed(2),b.paid?"YES":"NO"]);
+    list.push([b.dayLabel,b.sessLabel,(b.slotStart||"")+"-"+(b.slotEnd||""),b.boat,b.club,b.referent,b.email,b.phone||"-","EUR "+getPrice(b.boat).toFixed(2),b.paid?"YES":"NO"]);
   });
   list.push([]);
   list.push(["TOTAL","","","",all.length+" slots","","","","EUR "+(all.length*PRICE).toFixed(2),all.filter(function(b){return b.paid;}).length+" paid"]);
@@ -2130,6 +2135,27 @@ function showCountdown(){
 }
 
 showCountdown();
+// Promo banner
+(function(){
+  const banner = document.getElementById('promo-banner');
+  const txt = document.getElementById('promo-text');
+  if(!banner||!txt) return;
+  if(isPromo()){
+    banner.style.display = 'block';
+    const updatePromoText = function(){
+      const diff = PROMO_END - new Date();
+      if(diff <= 0){ banner.style.display='none'; return; }
+      const h = Math.floor(diff/3600000);
+      const m = Math.floor((diff%3600000)/60000);
+      const label = lang==='it'
+        ? 'Promo lancio: 1x e 2x a €15,00 a barca · Scade in ' + h + 'h ' + m + 'm · Dal 7 Aprile prezzi standard'
+        : 'Launch promo: 1x and 2x at €15.00 per boat · Expires in ' + h + 'h ' + m + 'm · Standard prices from April 7';
+      txt.textContent = label;
+      setTimeout(updatePromoText, 60000);
+    };
+    updatePromoText();
+  }
+})();
 
 
 // INIT
