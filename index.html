@@ -2151,8 +2151,8 @@ showCountdown();
       const h = Math.floor(diff/3600000);
       const m = Math.floor((diff%3600000)/60000);
       const label = lang==='it'
-        ? '🎉 Promo lancio: 1x a €15,00 · 2x a €15,00 a barca · Scade in ' + h + 'h ' + m + 'm · Dal 7 Aprile: 2x a €30,00'
-        : '🎉 Launch promo: 1x at €15.00 · 2x at €15.00 per boat · Expires in ' + h + 'h ' + m + 'm · From April 7: 2x at €30.00';
+        ? '🎉 Promo lancio: 2x a €15,00 a barca (invece di €30,00) · Scade in ' + h + 'h ' + m + 'm · Dal 7 Aprile: €30,00'
+        : '🎉 Launch promo: 2x at €15.00 per boat (instead of €30.00) · Expires in ' + h + 'h ' + m + 'm · From April 7: €30.00';
       txt.textContent = label;
       setTimeout(updatePromoText, 60000);
     };
