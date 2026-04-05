@@ -516,17 +516,17 @@ function defaultSessionConfig(){
     ]},
   ];
 }
+const SESSION_CONFIG_VERSION = "v5"; // increment to force reset
 function loadSessionConfig(){
   try {
-    const saved = JSON.parse(localStorage.getItem('sessionConfig'));
-    if(!saved) return defaultSessionConfig();
-    // Validate dates — if stored config has wrong dates, reset to default
-    const def = defaultSessionConfig();
-    if(saved[0].dateKey !== def[0].dateKey || saved[1].dateKey !== def[1].dateKey){
+    const ver = localStorage.getItem('sessionConfigVersion');
+    if(ver !== SESSION_CONFIG_VERSION){
       localStorage.removeItem('sessionConfig');
-      return def;
+      localStorage.setItem('sessionConfigVersion', SESSION_CONFIG_VERSION);
+      return defaultSessionConfig();
     }
-    return saved;
+    const saved = JSON.parse(localStorage.getItem('sessionConfig'));
+    return saved || defaultSessionConfig();
   }
   catch(e){ return defaultSessionConfig(); }
 }
