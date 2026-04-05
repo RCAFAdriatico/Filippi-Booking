@@ -1470,14 +1470,10 @@ async function callScript(payload){
     return true;
   }
   try{
-    const r = await fetch(APPS_SCRIPT_URL, {
-      method:"POST",
-      headers:{"Content-Type":"text/plain"},
-      body:JSON.stringify(payload),
-      mode:"cors",
-    });
-    const d = await r.json();
-    return d.ok === true;
+    const fd = new FormData();
+    fd.append("data", JSON.stringify(payload));
+    await fetch(APPS_SCRIPT_URL, {method:"POST", mode:"no-cors", body:fd});
+    return true;
   } catch(e){ console.error(e); return false; }
 }
 
@@ -1913,18 +1909,14 @@ async function doMoveSlot(oldDk, oldSlotMin, boat, clubName, referent, email){
 
   // Cancel old in sheet and book new
   try {
-    const fd1 = new FormData();
-    fd1.append("data", JSON.stringify({action:"cancel", club:clubName, referent, email,
+    await callScript({action:"cancel", club:clubName, referent, email,
       boat, dk:oldDk, slotMin:oldSlotMin,
       dayLabel:oldDay?.dateLabel||"", sessLabel:oldSess?.label||"",
-      start:oldSlot?.start||"", end:oldSlot?.end||""}));
-    await fetch(APPS_SCRIPT_URL, {method:"POST", mode:"no-cors", body:fd1});
+      start:oldSlot?.start||"", end:oldSlot?.end||""});
 
-    const fd2 = new FormData();
-    fd2.append("data", JSON.stringify({action:"book", club:clubName, referent, email, phone:"",
+    await callScript({action:"book", club:clubName, referent, email, phone:"",
       slots:[{boat, dayLabel:newDateLabel, sessLabel:newSessLabel,
-              start:newStart, end:newEnd, dk:newDk, slotMin:newSlotMin}]}));
-    await fetch(APPS_SCRIPT_URL, {method:"POST", mode:"no-cors", body:fd2});
+              start:newStart, end:newEnd, dk:newDk, slotMin:newSlotMin}]});
   } catch(e){ console.error(e); }
 
   document.getElementById('move-modal').remove();
