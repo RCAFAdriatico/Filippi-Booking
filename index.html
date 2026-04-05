@@ -508,11 +508,11 @@ function makeSlots(s, e){
 function defaultSessionConfig(){
   return [
     {dateKey:"2026-04-16", dayLabel:"Thursday", dateLabel:"16 April 2026", sessions:[
-      {id:"thu-am", label:"Morning",   icon:"☀️",  startMin:9*60,   endMin:12*60+30},
-      {id:"thu-pm", label:"Afternoon", icon:"🌤️", startMin:14*60,  endMin:18*60},
+      {id:"thu-am", label:"Morning",   icon:"☀️",  startMin:8*60+30, endMin:14*60},
+      {id:"thu-pm", label:"Afternoon", icon:"🌤️", startMin:14*60,   endMin:18*60+30},
     ]},
     {dateKey:"2026-04-17", dayLabel:"Friday", dateLabel:"17 April 2026", sessions:[
-      {id:"fri-am", label:"Morning",   icon:"☀️",  startMin:8*60,   endMin:12*60},
+      {id:"fri-am", label:"Morning",   icon:"☀️",  startMin:7*60+30, endMin:12*60},
     ]},
   ];
 }
