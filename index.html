@@ -1910,7 +1910,7 @@ function generateReceipt(clubName, referent, email){
   doc.setDrawColor(...BORDER); doc.setLineWidth(0.3); doc.line(ml, y, W-mr, y); y += 8;
 
   // Calculate total for this club
-  const clubBks = getAllConfirmed().filter(b => b.club===clubName && b.paid);
+  const clubBks = getAllConfirmed().filter(b => b.club===clubName);
   const total = clubBks.reduce((s,b) => s + getPrice(b.boat), 0);
   const totalStr = total.toFixed(2);
 
