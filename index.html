@@ -1911,25 +1911,10 @@ function generateReceipt(clubName, referent, email){
 
   // Calculate total for this club
   const clubBks = getAllConfirmed().filter(b => b.club===clubName);
-  const total = clubBks.reduce((s,b) => {
-    // Parse Italian timestamp format: "02/04/2026 23.02.16"
-    let prices = PRICES_FULL;
-    if(b.timestamp){
-      try {
-        const parts = b.timestamp.split(' ');
-        const dateParts = parts[0].split('/');
-        const timeParts = (parts[1]||'00.00.00').split('.');
-        const bkDate = new Date(
-          parseInt(dateParts[2]), parseInt(dateParts[1])-1, parseInt(dateParts[0]),
-          parseInt(timeParts[0]), parseInt(timeParts[1]), parseInt(timeParts[2]||0)
-        );
-        prices = bkDate < PROMO_END ? PRICES_PROMO : PRICES_FULL;
-      } catch(e){ prices = PRICES_PROMO; } // default to promo if parse fails
-    } else {
-      prices = PRICES_PROMO; // no timestamp = old booking during promo
-    }
-    return s + (prices[b.boat] || 15);
-  }, 0);
+  const autoTotal = clubBks.reduce((s,b) => s + getPrice(b.boat), 0);
+  const inputTotal = prompt('Importo da inserire in ricevuta per ' + clubName + '\n(suggerito: €' + autoTotal.toFixed(2) + ')\n\nInserisci importo in €:', autoTotal.toFixed(2));
+  if(inputTotal === null) return; // cancelled
+  const total = parseFloat(inputTotal.replace(',','.')) || autoTotal;
   const totalStr = total.toFixed(2);
 
   // Amount box
