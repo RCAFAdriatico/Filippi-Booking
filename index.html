@@ -1911,7 +1911,12 @@ function generateReceipt(clubName, referent, email){
 
   // Calculate total for this club
   const clubBks = getAllConfirmed().filter(b => b.club===clubName);
-  const total = clubBks.reduce((s,b) => s + getPrice(b.boat), 0);
+  const total = clubBks.reduce((s,b) => {
+    // Use booking timestamp to determine correct price
+    const bkDate = b.timestamp ? new Date(b.timestamp.split(' ').join('T').replace(/\./g,'-').split('T')[0] + 'T' + (b.timestamp.split(' ')[1]||'00:00:00')) : new Date();
+    const prices = bkDate < PROMO_END ? PRICES_PROMO : PRICES_FULL;
+    return s + (prices[b.boat] || 15);
+  }, 0);
   const totalStr = total.toFixed(2);
 
   // Amount box
