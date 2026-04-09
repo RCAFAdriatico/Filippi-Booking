@@ -955,7 +955,7 @@ function openSendModal(){
   termsOk = false; updateTermsUI();
   document.getElementById("m-sub").textContent     = `${club.name} · ${myCart.length} slots`;
   document.getElementById("m-causale").textContent = `TRAINING RENTAL ${club.name}`;
-  const tot  = (myCart.length * PRICE).toFixed(2);
+  const tot  = myCart.reduce((s,c) => s + getPrice(c.boat), 0).toFixed(2);
   const rows = myCart.map(c => `
     <div class="mrow">
       <span class="mrow-k">${c.dayLabel} · ${c.sessLabel}</span>
@@ -1317,7 +1317,7 @@ function renderAdmin(){
   const all   = getAllConfirmed();
   const clubs = [...new Set(all.map(b => b.club))];
   document.getElementById("admin-stats").innerHTML = [
-    {val:all.length,                              lbl:"Total slots",  sub:`€ ${(all.length*PRICE).toFixed(2)}`},
+    {val:all.length,                              lbl:"Total slots",  sub:`€ ${all.reduce((s,b)=>s+getPrice(b.boat),0).toFixed(2)}`},
     {val:clubs.length,                            lbl:"Club",         sub:"with bookings"},
     {val:all.filter(b=>b.boat==="1x").length,     lbl:"1x Singles",   sub:`max ${FLEET["1x"]} per slots`},
     {val:all.filter(b=>b.boat==="2x").length,     lbl:"2x Doubles",     sub:`max ${FLEET["2x"]} per slots`},
@@ -1792,7 +1792,7 @@ async function sendSummary(){
   }).filter(Boolean).join("\n\n");
   const ok = await callScript({action:"summary",
     subject:"📋 Riepilogo prenotazioni – Regata Aprile 2026",
-    message:`Total: ${all.length} slots · €${(all.length*PRICE).toFixed(2)}\n\n` + (body||"No bookings")});
+    message:`Total: ${all.length} slots · €${all.reduce((s,b)=>s+getPrice(b.boat),0).toFixed(2)}\n\n` + (body||"No bookings")});
   toast(ok ? "📧 Summary sent!" : "⚠️ Send failed");
 }
 
